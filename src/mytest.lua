@@ -2,13 +2,12 @@ require 'paths'
 require 'torch'
 require 'xlua'
 require 'json'
+paths.dofile('myutils.lua')
 paths.dofile('ref.lua')
 model = torch.load(opt.loadModel)
 
-
--- file = io.open('Result.txt','a')
-
-ntest = opt.nValidImgs
+seqName = 'dslr_dance1'
+ntest = 360
 avglen = {117.80702013, 487.78421339, 373.71816181, 117.80702013,
        487.96079204, 373.71755575, 223.44787073, 250.85571875,
       85.11261748, 170.2761693 , 143.43147138, 299.4442099 ,
@@ -18,7 +17,7 @@ w = image.display(image.lena())
 model:evaluate()
 for idx = 1,ntest do
     xlua.progress(idx, ntest)
-    inp,pts3D = generateSample(idx)
+    inp = loadInTheWild(seqName, idx)
     image.display{image=inp, win=w}
 
     pred = model:forward(inp:cuda())
@@ -64,14 +63,12 @@ for idx = 1,ntest do
             end
         end
         skel3D[idx2] = skel3D[idx1]:clone() + tmp:clone() / torch.norm(tmp) * avglen[id]
-
     end
         
     skel3D = skel3D:double()
-
-    local outputImage = '../output/mpi/' .. string.format('%04d.png', idx)
+    local outputImage = '../output/dslr_dance1/' .. string.format('%04d.png', idx)
     image.save(outputImage, inp)
-    local outputFile = '../output/mpi/' .. string.format('%04d.json', idx)
+    local outputFile = '../output/dslr_dance1/' .. string.format('%04d.json', idx)
     local t = {}
     for i=1,skel3D:size(1) do
         t[i] = {}
@@ -83,19 +80,5 @@ for idx = 1,ntest do
     local f = io.open(outputFile, 'w')
     f:write(str)
     f:close()
-
-    -- tmp = pts3D[{1,{}}]:clone()
-   
-    -- for i = 1,17 do
-    --     pts3D[{i,{}}] = pts3D[{i,{}}]:clone() - tmp:clone()
-    -- end
-  
-    -- diss = torch.sqrt(torch.sum(torch.pow(pts3D:clone()-skel3D:clone(),2),2)):transpose(1,2):squeeze()
-    
-    -- for i=1,17 do
-    --     file:write(diss[i] .. '\t')
-    -- end
-    -- file:write('\n')
-    -- file:flush()
 end
 

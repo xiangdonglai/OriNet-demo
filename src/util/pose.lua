@@ -7,8 +7,8 @@ local function rnd(x) return math.max(-2*x,math.min(2*x,torch.randn(1)[1]*x)) en
 
 -- Code to generate training samples from raw images
 function generateSample(idx)
-    local img = dataset:loadImage(idx)
     local pts3D_univ, c, s = dataset:getPartInfo(idx)
+    local img = dataset:loadImage(idx)
 
     local inp = crop(img, c, s, 0, opt.inputRes)
     
